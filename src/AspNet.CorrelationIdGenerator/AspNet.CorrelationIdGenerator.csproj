@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <PackageId>AspNet.CorrelationIdGenerator</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Mark Gossa</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>ASP.NET CorrelationId generator for distrubuted systems</Description>
+    <PackageTags>ASP.NET;Tracing;Logging;Event driven architecture;REST API;</PackageTags>
+    <PackageProjectUrl>https://github.com/markgossa/AspNet.CorrelationIdGenerator</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,7 +17,7 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
     [Fact]
     public async Task GivenApiIsStarted_WhenICallTheEndpointWithoutACorrelationId_ThenOneIsGeneratedAndReturnedInTheResponseHeader()
     {
-        var response = await _apiTestsContext.HttpClient.GetAsync(_requestUri);
+        var response = await _apiTestsContext.HttpClientWithMock.GetAsync(_requestUri);
         
         AssertResponseHeadersContainCorrelationId(response);
         await AssertWeatherForecastsReturned(response);
@@ -26,8 +26,8 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
     [Fact]
     public async Task GivenApiIsStarted_WhenICallTheEndpointWithoutACorrelationId_ThenANewOneIsGeneratedAndReturnedInTheResponseHeaderForEachRequest()
     {
-        var response1 = await _apiTestsContext.HttpClient.GetAsync(_requestUri);
-        var response2 = await _apiTestsContext.HttpClient.GetAsync(_requestUri);
+        var response1 = await _apiTestsContext.HttpClientWithoutMock.GetAsync(_requestUri);
+        var response2 = await _apiTestsContext.HttpClientWithoutMock.GetAsync(_requestUri);
 
         Assert.NotEqual(GetCorrelationIdFromResponse(response1), GetCorrelationIdFromResponse(response2));
     }
@@ -43,7 +43,7 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
 
         request.Headers.Add(_correlationIdHeader, expectedCorrelationId);
 
-        var response = await _apiTestsContext.HttpClient.SendAsync(request);
+        var response = await _apiTestsContext.HttpClientWithMock.SendAsync(request);
 
         AssertResponseHeadersContainCorrelationId(response, expectedCorrelationId);
         await AssertWeatherForecastsReturned(response);

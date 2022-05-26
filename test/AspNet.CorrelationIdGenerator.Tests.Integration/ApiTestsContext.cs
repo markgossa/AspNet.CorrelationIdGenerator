@@ -8,28 +8,30 @@ namespace AspNet.CorrelationIdGenerator.Tests.Integration;
 
 public class ApiTestsContext : IDisposable
 {
-    public HttpClient HttpClient { get; }
+    public HttpClient HttpClientWithMock { get; }
+    public HttpClient HttpClientWithoutMock { get; }
     public Mock<ICorrelationIdGenerator> MockCorrelationIdGenerator { get; } = new();
     public string CorrelationId { get; set; }
 
     public ApiTestsContext()
     {
-        HttpClient = BuildWebApplicationFactory().CreateClient();
+        HttpClientWithMock = BuildWebApplicationFactoryWithMock().CreateClient();
+        HttpClientWithoutMock = BuildWebApplicationFactoryWithoutMock().CreateClient();
         CorrelationId = Guid.NewGuid().ToString();
         MockCorrelationIdGenerator.Setup(m => m.Get()).Returns(CorrelationId);
     }
 
-    protected WebApplicationFactory<WeatherForecast> BuildWebApplicationFactory()
+    protected WebApplicationFactory<WeatherForecast> BuildWebApplicationFactoryWithMock()
         => new WebApplicationFactory<WeatherForecast>()
             .WithWebHostBuilder(b =>
-                b.ConfigureServices(services => RegisterServices(services)));
+                b.ConfigureServices(services => services.AddScoped(sp => MockCorrelationIdGenerator.Object)));
 
-    private void RegisterServices(IServiceCollection services)
-        => services.AddSingleton(MockCorrelationIdGenerator.Object);
+    protected static WebApplicationFactory<WeatherForecast> BuildWebApplicationFactoryWithoutMock() => new();
 
     public void Dispose()
     {
-        HttpClient.Dispose();
+        HttpClientWithMock.Dispose();
+        HttpClientWithoutMock.Dispose();
         GC.SuppressFinalize(this);
     }
 }
