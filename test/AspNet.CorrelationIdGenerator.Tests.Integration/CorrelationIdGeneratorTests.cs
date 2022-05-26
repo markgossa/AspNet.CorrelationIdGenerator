@@ -1,4 +1,5 @@
 ﻿using Example.Api;
+using Moq;
 using System.Net.Http;
 using System.Text.Json;
 using Xunit;
@@ -23,6 +24,15 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
     }
     
     [Fact]
+    public async Task GivenApiIsStarted_WhenICallTheEndpointWithoutACorrelationId_ThenANewOneIsGeneratedAndReturnedInTheResponseHeaderForEachRequest()
+    {
+        var response1 = await _apiTestsContext.HttpClient.GetAsync(_requestUri);
+        var response2 = await _apiTestsContext.HttpClient.GetAsync(_requestUri);
+
+        Assert.NotEqual(GetCorrelationIdFromResponse(response1), GetCorrelationIdFromResponse(response2));
+    }
+    
+    [Fact]
     public async Task GivenApiIsStarted_WhenICallTheEndpointWithACorrelationId_ThenItIsSavedAndReturnedInTheResponseHeader()
     {
         var expectedCorrelationId = Guid.NewGuid().ToString();
@@ -37,18 +47,25 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
 
         AssertResponseHeadersContainCorrelationId(response, expectedCorrelationId);
         await AssertWeatherForecastsReturned(response);
-        Assert.Equal(expectedCorrelationId, _apiTestsContext.CorrelationId);
+        _apiTestsContext.MockCorrelationIdGenerator.Verify(m => m.Set(expectedCorrelationId), Times.Once);
     }
 
     private void AssertResponseHeadersContainCorrelationId(HttpResponseMessage response, 
         string? expectedCorrelationId = null)
     {
-        response.Headers.TryGetValues(_correlationIdHeader, out var correlationIdValues);
-        var expected = string.IsNullOrWhiteSpace(expectedCorrelationId) 
-            ? _apiTestsContext.CorrelationId 
+        var correlationId = GetCorrelationIdFromResponse(response);
+        var expected = string.IsNullOrWhiteSpace(expectedCorrelationId)
+            ? _apiTestsContext.CorrelationId
             : expectedCorrelationId;
 
-        Assert.Equal(expected, correlationIdValues?.First());
+        Assert.Equal(expected, correlationId);
+    }
+
+    private static string? GetCorrelationIdFromResponse(HttpResponseMessage response)
+    {
+        response.Headers.TryGetValues(_correlationIdHeader, out var correlationIdValues);
+     
+        return correlationIdValues?.First();
     }
 
     private static async Task AssertWeatherForecastsReturned(HttpResponseMessage response)
@@ -57,6 +74,4 @@ public class CorrelationIdGeneratorTests : IClassFixture<ApiTestsContext>
         var weatherForecast = JsonSerializer.Deserialize<List<WeatherForecast>>(json);
         Assert.NotNull(weatherForecast);
     }
-
-    //Assert existing CorrelationId from request header is saved as the CorrelationId in the CorrelationIdGenerator
 }

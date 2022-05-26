@@ -10,12 +10,13 @@ public class ApiTestsContext : IDisposable
 {
     public HttpClient HttpClient { get; }
     public Mock<ICorrelationIdGenerator> MockCorrelationIdGenerator { get; } = new();
-    public readonly string CorrelationId = Guid.NewGuid().ToString();
+    public string CorrelationId { get; set; }
 
     public ApiTestsContext()
     {
         HttpClient = BuildWebApplicationFactory().CreateClient();
-        MockCorrelationIdGenerator.Setup(m => m.CorrelationId).Returns(CorrelationId);
+        CorrelationId = Guid.NewGuid().ToString();
+        MockCorrelationIdGenerator.Setup(m => m.Get()).Returns(CorrelationId);
     }
 
     protected WebApplicationFactory<WeatherForecast> BuildWebApplicationFactory()

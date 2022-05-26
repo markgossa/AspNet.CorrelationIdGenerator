@@ -22,12 +22,12 @@ public class CorrelationIdMiddleware
     {
         if (context.Request.Headers.TryGetValue(_correlationIdHeader, out var correlationId))
         {
-            correlationIdGenerator.CorrelationId = correlationId;
+            correlationIdGenerator.Set(correlationId);
             return correlationId;
         }
         else
         {
-            return correlationIdGenerator.CorrelationId;
+            return correlationIdGenerator.Get();
         }
     }
 

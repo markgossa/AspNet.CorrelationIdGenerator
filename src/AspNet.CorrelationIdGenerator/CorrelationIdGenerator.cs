@@ -2,5 +2,9 @@
 
 public class CorrelationIdGenerator : ICorrelationIdGenerator
 {
-    public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
+    private string _correlationId = Guid.NewGuid().ToString();
+
+    public string Get() => _correlationId;
+
+    public void Set(string correlationId) => _correlationId = correlationId;
 }
