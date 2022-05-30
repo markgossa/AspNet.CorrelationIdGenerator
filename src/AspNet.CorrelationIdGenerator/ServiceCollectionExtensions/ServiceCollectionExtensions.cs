@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNet.CorrelationIdGenerator.ServiceCollectionExtensions;
-public static class ServiceCollectionExtensions
+namespace AspNet.CorrelationIdGenerator.ServiceCollectionExtensions
 {
-    public static IServiceCollection AddCorrelationIdGenerator(this IServiceCollection services)
+    public static class ServiceCollectionExtensions
     {
-        services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
+        public static IServiceCollection AddCorrelationIdGenerator(this IServiceCollection services)
+        {
+            services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
 
-        return services;
+            return services;
+        }
     }
 }

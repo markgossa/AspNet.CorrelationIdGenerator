@@ -1,40 +1,42 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using System.Threading.Tasks;
 
-namespace AspNet.CorrelationIdGenerator;
-
-public class CorrelationIdMiddleware
+namespace AspNet.CorrelationIdGenerator
 {
-    private readonly RequestDelegate _next;
-    private const string _correlationIdHeader = "X-Correlation-Id";
-
-    public CorrelationIdMiddleware(RequestDelegate next) => _next = next;
-
-    public async Task Invoke(HttpContext context, ICorrelationIdGenerator correlationIdGenerator)
+    public class CorrelationIdMiddleware
     {
-        var correlationId = GetCorrelationId(context, correlationIdGenerator);
-        AddCorrelationIdHeaderToResponse(context, correlationId);
+        private readonly RequestDelegate _next;
+        private const string _correlationIdHeader = "X-Correlation-Id";
 
-        await _next(context);
-    }
+        public CorrelationIdMiddleware(RequestDelegate next) => _next = next;
 
-    private static StringValues GetCorrelationId(HttpContext context, ICorrelationIdGenerator correlationIdGenerator)
-    {
-        if (context.Request.Headers.TryGetValue(_correlationIdHeader, out var correlationId))
+        public async Task Invoke(HttpContext context, ICorrelationIdGenerator correlationIdGenerator)
         {
-            correlationIdGenerator.Set(correlationId);
-            return correlationId;
-        }
-        else
-        {
-            return correlationIdGenerator.Get();
-        }
-    }
+            var correlationId = GetCorrelationId(context, correlationIdGenerator);
+            AddCorrelationIdHeaderToResponse(context, correlationId);
 
-    private static void AddCorrelationIdHeaderToResponse(HttpContext context, StringValues correlationId)
-        => context.Response.OnStarting(() =>
+            await _next(context);
+        }
+
+        private static StringValues GetCorrelationId(HttpContext context, ICorrelationIdGenerator correlationIdGenerator)
+        {
+            if (context.Request.Headers.TryGetValue(_correlationIdHeader, out var correlationId))
             {
-                context.Response.Headers.Add(_correlationIdHeader, new[] { correlationId.ToString() });
-                return Task.CompletedTask;
-            });
+                correlationIdGenerator.Set(correlationId);
+                return correlationId;
+            }
+            else
+            {
+                return correlationIdGenerator.Get();
+            }
+        }
+
+        private static void AddCorrelationIdHeaderToResponse(HttpContext context, StringValues correlationId)
+            => context.Response.OnStarting(() =>
+                {
+                    context.Response.Headers.Add(_correlationIdHeader, new[] { correlationId.ToString() });
+                    return Task.CompletedTask;
+                });
+    }
 }

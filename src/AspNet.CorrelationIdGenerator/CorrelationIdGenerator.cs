@@ -1,10 +1,13 @@
-﻿namespace AspNet.CorrelationIdGenerator;
+﻿using System;
 
-public class CorrelationIdGenerator : ICorrelationIdGenerator
+namespace AspNet.CorrelationIdGenerator
 {
-    private string _correlationId = Guid.NewGuid().ToString();
+    public class CorrelationIdGenerator : ICorrelationIdGenerator
+    {
+        private string _correlationId = Guid.NewGuid().ToString();
 
-    public string Get() => _correlationId;
+        public string Get() => _correlationId;
 
-    public void Set(string correlationId) => _correlationId = correlationId;
+        public void Set(string correlationId) => _correlationId = correlationId;
+    }
 }
